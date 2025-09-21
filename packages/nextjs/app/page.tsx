@@ -5,12 +5,16 @@ import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/navigation";
 import { useNicknameStore } from "../services/store/nicknameStore";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const router = useRouter();
   const [roomId, setRoomId] = useState("");
   const [token, setToken] = useState("USDC");
+  const [entryFee, setEntryFee] = useState("");
+  const [maxParticipants, setMaxParticipants] = useState("");
   const nickname = useNicknameStore(state => state.nickname);
   const setNickname = useNicknameStore(state => state.setNickname);
 
@@ -24,6 +28,33 @@ const Home: NextPage = () => {
     setRoomId(r);
     
   }
+
+  const { data: balance } = useScaffoldReadContract({
+    contractName: "SE2Token",
+    functionName: "balanceOf",
+    args: [connectedAddress],
+  });
+
+  const { data: roundInfo } = useScaffoldReadContract({
+    contractName: "ChartPredictionMultiPoolV1",
+    functionName: "getRoundInfo",
+    args: [BigInt(roomId)],
+  });
+
+  const { writeContractAsync: createRound } = useScaffoldWriteContract("ChartPredictionMultiPoolV1");
+  const createRoom = async (entryFee: string, maxParticipants: string) => {
+    try {
+      await createRound({
+        functionName: "createRound",
+        args: [token, BigInt(entryFee), BigInt(maxParticipants)],
+      });
+      // Reset if needed
+      setToken(""); setEntryFee(""); setMaxParticipants("");
+    } catch (e) {
+      console.error("Error creating room", e);
+    }
+  };
+
 
   return (
     <div
