@@ -12,7 +12,6 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const router = useRouter();
   const [roomId, setRoomId] = useState("");
-  const [token, setToken] = useState("USDC");
   const [entryFee, setEntryFee] = useState("");
   const [maxParticipants, setMaxParticipants] = useState("");
   const nickname = useNicknameStore(state => state.nickname);
@@ -20,14 +19,10 @@ const Home: NextPage = () => {
 
   const enterRoom = () => {
     if (!roomId || !nickname) return;
-    router.push(`/room/${roomId}?token=${token}`); // nickname now in store
+    router.push(`/room/${roomId}`); // nickname now in store
   };
 
-  const handleRoomCreation = () =>{
-    const r = Math.random().toString(36).substring(2, 8);
-    setRoomId(r);
-    
-  }
+  
 
   const { data: balance } = useScaffoldReadContract({
     contractName: "SE2Token",
@@ -41,15 +36,27 @@ const Home: NextPage = () => {
     args: [BigInt(roomId)],
   });
 
+  const { data: nextRoundId } = useScaffoldReadContract({
+    contractName: "ChartPredictionMultiPoolV1",
+    functionName: "nextRoundId",
+  });
+
   const { writeContractAsync: createRound } = useScaffoldWriteContract("ChartPredictionMultiPoolV1");
-  const createRoom = async (entryFee: string, maxParticipants: string) => {
+  const createRoom = async () => {
+    if (!entryFee || !maxParticipants) return;
     try {
-      await createRound({
+      const result = await createRound({
         functionName: "createRound",
-        args: [token, BigInt(entryFee), BigInt(maxParticipants)],
+        args: ["0x0000000000000000000000000000000000000000", BigInt(entryFee), BigInt(maxParticipants)],
       });
+      // The new round ID will be the current nextRoundId
+      if (nextRoundId) {
+        setRoomId(nextRoundId.toString());
+      }
+      console.log("Room created with transaction:", result);
       // Reset if needed
-      setToken(""); setEntryFee(""); setMaxParticipants("");
+      setEntryFee(""); 
+      setMaxParticipants("");
     } catch (e) {
       console.error("Error creating room", e);
     }
@@ -101,9 +108,9 @@ const Home: NextPage = () => {
           }}
         />
         <input
-          placeholder="Room Code"
-          value={roomId}
-          onChange={e => setRoomId(e.target.value)}
+          placeholder="Entry Fee"
+          value={entryFee}
+          onChange={e => setEntryFee(e.target.value)}
           style={{
             padding: "8px 16px",
             fontSize: "1.2rem",
@@ -115,22 +122,21 @@ const Home: NextPage = () => {
             fontFamily: "'Caveat', cursive",
           }}
         />
-        <select
-          value={token}
-          onChange={e => setToken(e.target.value)}
+        <input
+          placeholder="Max Participants"
+          value={maxParticipants}
+          onChange={e => setMaxParticipants(e.target.value)}
           style={{
-            padding: "8px 12px",
-            fontSize: "1.1rem",
+            padding: "8px 16px",
+            fontSize: "1.2rem",
             borderRadius: 10,
             border: "2px dashed #222",
             background: "#fff",
-            fontFamily: "'Caveat', cursive",
+            outline: "none",
             marginBottom: 10,
+            fontFamily: "'Caveat', cursive",
           }}
-        >
-          <option value="USDC">USDC</option>
-          {/* Add more token options as needed */}
-        </select>
+        />
         <button
           onClick={enterRoom}
           style={{
@@ -149,20 +155,24 @@ const Home: NextPage = () => {
           Join Room
         </button>
         <button
-          onClick={() => handleRoomCreation()}
+          onClick={() => createRoom()}
           style={{
             fontFamily: "'Caveat', cursive",
-            fontSize: "1.1rem",
+            fontSize: "1.3rem",
             color: "#222",
-            background: "#e9e9e9",
-            border: "1.5px dashed #888",
-            borderRadius: 8,
-            padding: "8px 20px",
+            background: "#90fffd",
+            border: "2px solid #222",
+            borderRadius: 10,
+            padding: "12px 32px",
             cursor: "pointer",
+            boxShadow: "0 3px #ccc",
+            marginBottom: 8,
           }}
         >
-          Create New Room
+          Create Room
         </button>
+       
+          
         <div style={{ marginTop: 20 }}>
           <ConnectButton showBalance={false} accountStatus="avatar" />
         </div>
