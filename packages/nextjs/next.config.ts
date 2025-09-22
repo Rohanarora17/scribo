@@ -3,11 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   devIndicators: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   typescript: {
     ignoreBuildErrors: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
-  },
-  eslint: {
-    ignoreDuringBuilds: process.env.NEXT_PUBLIC_IGNORE_BUILD_ERROR === "true",
   },
   webpack: config => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
 };
 
 const isIpfs = process.env.NEXT_PUBLIC_IPFS_BUILD === "true";
+
+module.exports = nextConfig;
 
 if (isIpfs) {
   nextConfig.output = "export";

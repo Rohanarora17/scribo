@@ -13,16 +13,8 @@ export type ScaffoldConfig = BaseConfig;
 
 export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
-
-
 const scaffoldConfig = {
-  targetNetworks: [
-    chains.hardhat, 
-    chains.mainnet, 
-    chains.base, 
-    chains.baseSepolia, 
-    chains.sepolia
-  ],
+  targetNetworks: [chains.hardhat, chains.mainnet, chains.base, chains.baseSepolia, chains.sepolia],
   pollingInterval: 30000,
   alchemyApiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY || DEFAULT_ALCHEMY_API_KEY,
   rpcOverrides: {

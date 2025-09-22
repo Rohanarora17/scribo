@@ -7,5 +7,5 @@ export interface NicknameState {
 
 export const useNicknameStore = create<NicknameState>(set => ({
   nickname: "",
-  setNickname: (nickname) => set({ nickname }),
+  setNickname: nickname => set({ nickname }),
 }));

@@ -22,7 +22,7 @@ const deploySe2Token: DeployFunction = async function (hre: HardhatRuntimeEnviro
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("ChartPredictionMultiPoolV1", {
+  await deploy("ChartPredictionMultiPoolV2", {
     from: deployer,
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
@@ -35,4 +35,4 @@ export default deploySe2Token;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags SE2Token
-deploySe2Token.tags = ["ChartPredictionMultiPoolV1"];
+deploySe2Token.tags = ["ChartPredictionMultiPoolV2"];
